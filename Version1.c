@@ -30,6 +30,8 @@ void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
+void progresser(int lesX[], int lesY[]);
+
 
 /**
  * @brief Entrée du programme
@@ -48,17 +50,33 @@ int main()
     printf("quelle ligne apparait le serpent ?\n");
     scanf("%d", &y);
     getchar();
-    afficher(x, y, TETE);
+    for (int i = 1; i < TAILLE; i++)
+    {
+        LesX[i] = x - i;
+        LesY[i] = y;
+    }
     system("clear");
-    /**for (int i = 1; i < TAILLE; i++)
-     *{
-     *    LesX[i] = x - i;
-     *    LesY[i] = y;
-     *}
-     */
-    printf("\n");
+    dessinerSerpent(LesX, LesY);
+    while (1) {
+        // Effacer l'ancienne position
+        for (int i = 0; i < TAILLE; i++) {
+            effacer(LesX[i], LesY[i]);
+        }
+
+        // Mettre à jour les coordonnées du serpent
+        progresser(LesX, LesY);
+
+        // Dessiner le serpent à la nouvelle position
+        dessinerSerpent(LesX, LesY);
+
+        // Pause pour voir le mouvement
+        usleep(500000); // Attendre 500 ms (0.5 seconde)
+
+        // Vérifier l'entrée de l'utilisateur pour arrêter le mouvement
+    }
     return EXIT_SUCCESS;
 }
+
 
 /**
  * @brief Procédure pour afficher le caractère c à la position (x, y)
@@ -85,7 +103,26 @@ void effacer(int x, int y)
 
 void dessinerSerpent(int lesX[], int lesY[])
 {
+    // Afficher la tête du serpent
+    afficher(lesX[0], lesY[0], TETE);
+    // Afficher le corps du serpent
+    for (int i = 1; i < TAILLE; i++)
+    {
+        afficher(lesX[i], lesY[i], CORP);
+    }
 }
+
+void progresser(int lesX[], int lesY[])
+{
+    // Déplacer la tête vers la droite
+    for (int i = TAILLE - 1; i > 0; i--)
+    {
+        lesX[i] = lesX[i - 1]; // Déplace chaque segment vers la position de celui qui le précède
+        lesY[i] = lesY[i - 1]; // Garde la même ligne pour tous les segments
+    }
+    lesX[0]++; // Déplace la tête vers la droite
+}
+
 
 /**
  * @brief Procédure pour positionner le curseur à un endroit précis
