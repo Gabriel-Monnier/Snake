@@ -21,7 +21,9 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #include <termios.h>
 
 /* déclaration des constantes */
-#define TAILLE 10 /* Taille du serpent */
+
+#define TAILLE_T 40 /* Taille du tableau */
+#define TAILLE_S 10 /* Taille du serpent */
 
 const char TETE = 'O';
 const char CORP = 'X';
@@ -29,9 +31,10 @@ const char CORP = 'X';
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
-void dessinerSerpent(int lesX[], int lesY[]);
+void dessinerSerpent(int laPosition[][]);
 void progresser(int lesX[], int lesY[]);
 
+typedef char Table[TAILLE_T][TAILLE_T];
 
 /**
  * @brief Entrée du programme
@@ -40,7 +43,8 @@ void progresser(int lesX[], int lesY[]);
  */
 int main()
 {
-    int LesX[TAILLE], LesY[TAILLE];
+    int positionX[TAILLE_S];
+    int positionY[TAILLE_S];
     int x, y;
     x = 1;
     y = 1;
@@ -50,33 +54,42 @@ int main()
     printf("quelle ligne apparait le serpent ?\n");
     scanf("%d", &y);
     getchar();
-    for (int i = 1; i < TAILLE; i++)
-    {
-        LesX[i] = x - i;
-        LesY[i] = y;
-    }
     system("clear");
-    dessinerSerpent(LesX, LesY);
-    while (1) {
-        // Effacer l'ancienne position
-        for (int i = 0; i < TAILLE; i++) {
-            effacer(LesX[i], LesY[i]);
-        }
-
-        // Mettre à jour les coordonnées du serpent
-        progresser(LesX, LesY);
-
-        // Dessiner le serpent à la nouvelle position
-        dessinerSerpent(LesX, LesY);
-
-        // Pause pour voir le mouvement
-        usleep(500000); // Attendre 500 ms (0.5 seconde)
-
-        // Vérifier l'entrée de l'utilisateur pour arrêter le mouvement
+    afficher(x, y, CORP);
+    for (int i = 0; i < TAILLE_S; i++)
+    {
+        positionX[i] = x - i;
+        positionY[i] = y;
     }
+    while (1)
+    {
+        effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // Effacer la queue
+        progresser(positionX, positionY);                          // Mettre à jour la position du serpent
+        dessinerSerpent(positionX, positionY);                     // Dessiner le serpent
+
+        usleep(200000); // Temporisation de 200 ms
+    }
+    // while (1)
+    // {
+    //     // Effacer l'ancienne position
+    //     for (int i = 0; i < TAILLE; i++)
+    //     {
+    //         effacer(LesX[i], LesY[i]);
+    //     }
+
+    //     // Mettre à jour les coordonnées du serpent
+    //     progresser(LesX, LesY);
+
+    //     // Dessiner le serpent à la nouvelle position
+    //     dessinerSerpent(LesX, LesY);
+
+    //     // Pause pour voir le mouvement
+    //     usleep(500000); // 0.5 seconde
+
+    //     // Vérifier l'entrée de l'utilisateur pour arrêter le mouvement
+    // }
     return EXIT_SUCCESS;
 }
-
 
 /**
  * @brief Procédure pour afficher le caractère c à la position (x, y)
@@ -103,10 +116,8 @@ void effacer(int x, int y)
 
 void dessinerSerpent(int lesX[], int lesY[])
 {
-    // Afficher la tête du serpent
     afficher(lesX[0], lesY[0], TETE);
-    // Afficher le corps du serpent
-    for (int i = 1; i < TAILLE; i++)
+    for (int i = 1; i < TAILLE_S; i++)
     {
         afficher(lesX[i], lesY[i], CORP);
     }
@@ -115,14 +126,13 @@ void dessinerSerpent(int lesX[], int lesY[])
 void progresser(int lesX[], int lesY[])
 {
     // Déplacer la tête vers la droite
-    for (int i = TAILLE - 1; i > 0; i--)
+    for (int i = TAILLE_S - 1; i > 0; i--)
     {
         lesX[i] = lesX[i - 1]; // Déplace chaque segment vers la position de celui qui le précède
         lesY[i] = lesY[i - 1]; // Garde la même ligne pour tous les segments
     }
     lesX[0]++; // Déplace la tête vers la droite
 }
-
 
 /**
  * @brief Procédure pour positionner le curseur à un endroit précis
