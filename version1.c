@@ -13,7 +13,7 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 *
 */
 
-/* Fichiers inclus */
+/** Fichiers inclus */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,11 +21,18 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #include <termios.h>
 #include <stdbool.h>
 
+<<<<<<< HEAD
 // déclaration des constante
 #define TAILLE_S 10 // taille du serpent
 #define TAILLE_MAX 40 // taille du tableau
 #define TAILLE_MIN 1
+=======
+>>>>>>> 278dea8cc933d8a2c05535cfaab151120785255c
 
+#define TAILLE_S 10 /** taille du serpent */ 
+#define TAILLE_MAX 40 /** taille max du tableau */
+
+/**/
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
@@ -35,7 +42,7 @@ const char BAS = 's'
 const char DROITE = 'd'
 const char GAUCHE = 'q'
 
-/* Déclaration des fonctions */
+/** Déclaration des fonctions */
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
@@ -47,19 +54,22 @@ void enableEcho();
 
 
 /**
- * @brief Entrée du programme
+ * @brief créé un serpent au coordonné voulu qui avance à droite
  * @return EXIT_SUCCESS : arrêt normal du programme
- * créé un serpent de taille 10 ou on veut et qui avance
+ * 
  */
 int main()
 {
-    // on declare les variables
+    /** on declare les variables */ 
     bool boucle;
     int positionX[TAILLE_S];
     int positionY[TAILLE_S];
     int x, y;
-    // on demande à l'utilisateur la position de depart du serpent
+
+    /** on initialise les variables */ 
     boucle = true;
+
+    /** on demande à l'utilisateur la position de depart du serpent */ 
     do 
     {
         printf("Entrez la position initiale de la tete du serpent (colonne 1-40, ligne 1-40):\n");
@@ -67,24 +77,48 @@ int main()
         scanf("%d", &x);
         printf("Ligne (y): ");
         scanf("%d", &y);
+        if ((x < 1) || (x > TAILLE_MAX) || (y < 1) || (y > TAILLE_MAX))
+        {
+            printf("erreur la colonne ou la ligne sont inferieur à 1 ou superieur a 40 \n");
+        }
     }
+<<<<<<< HEAD
     while((x < TAILLE_MIN) || (x > TAILLE_MAX) || (y < TAILLE_MIN) || (y > TAILLE_MAX)); // on verifie que la position est bonne sinon on redemande
     system("clear");
     // on initialise la position du serpent au coordonnées voulu
+=======
+    while((x < 1) || (x > TAILLE_MAX) || (y < 1) || (y > TAILLE_MAX)); /** on verifie que la position est bonne sinon on redemande */ 
+    system("clear"); /** efface l'écran au début */
+
+    /** on initialise la position du serpent au coordonnées voulu */ 
+>>>>>>> 278dea8cc933d8a2c05535cfaab151120785255c
     for (int i = 0; i < TAILLE_S; i++)
     {
-        positionX[i] = x;
+        if ((x - i) >= 0)
+        {
+            positionX[i] = x - i;
+        }
         positionY[i] = y;
     }
-    // pour qu'il se deplace à droite a chaque boucle
+
+    /** pour qu'il se deplace de 1 à droite à chaque boucle */ 
     while (boucle)
     {
+<<<<<<< HEAD
+=======
+        dessinerSerpent(positionX, positionY); /** dessiner le nouveau serpent a la position mis a jour */ 
+        usleep(500000);
+        effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); /** efface le bout du serpent qui ne seras pas remplacer par le prochain serpent */ 
+        progresser(positionX, positionY); /** met a jour la position du serpent */ 
+        
+        
+>>>>>>> 278dea8cc933d8a2c05535cfaab151120785255c
         if (kbhit() == 1)
         {
             char c = getchar();
             if (c == ARRET)
             {
-                boucle = false; // sort de la boucle si le caractère 'a' est pressé
+                boucle = false; /** sort de la boucle si le caractère 'a' est pressé */ 
             }
             else if (c == HAUT)
             {
@@ -101,14 +135,14 @@ int main()
         }
     }
 
-    system("clear");// efface l'écran à la fin
+    system("clear");/** efface l'écran à la fin */ 
     return EXIT_SUCCESS;
 }
 
 /**
  * @brief Procédure pour positionner le curseur aux coordonnées x y
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
  */
 void gotoXY(int x, int y)
 {
@@ -118,9 +152,9 @@ void gotoXY(int x, int y)
 
 /**
  * @brief Procédure pour afficher le caractère c à la position (x, y)
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
- * @param ens de type caractère : le caractère qu'on veut affiche a (x, y)
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
+ * @param c de type caractère : le caractère qu'on veut affiche a (x, y)
  */
 void afficher(int x, int y, char c)
 {
@@ -130,8 +164,8 @@ void afficher(int x, int y, char c)
 
 /**
  * @brief Procédure pour afficher un espace à la position (x, y)
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
  */
 void effacer(int x, int y)
 {
@@ -140,11 +174,9 @@ void effacer(int x, int y)
 }
 
 /**
- * @brief Procédure pour afficher le serpent en utilisant les tableaux donnés 
- * en premier la tête à la première position suivie du corp suivie du corps 
- * qui est dessiné à partir de la  deuxième position jusqu'à la fin du tableau.
- * @param ens lesX[] tableau d'entiers : les coordonnées de la colonne du serpent.
- * @param ens lesY[] tableau d'entiers : les coordonnées de la ligne du serpent.
+ * @brief Procédure pour afficher le serpent aux coordonnées données dans les tableaux.
+ * @param lesX[] tableau d'entiers : les coordonnées de la colonne du serpent.
+ * @param lesY[] tableau d'entiers : les coordonnées de la ligne du serpent.
  */
 void dessinerSerpent(int lesX[], int lesY[])
 {
@@ -158,8 +190,7 @@ void dessinerSerpent(int lesX[], int lesY[])
 
 /**
  * @brief Procédure pour mettre à jour la position du serpent
- * on déplace chaque bout du serpent vers la position de devant 
- * la tête du serpent est mise à la droite du corp.
+ *
  * @param lesX[] tableau d'entiers : les coordonnées actuelle des colonnes du serpent
  * @param lesY[] tableau d'entiers : les coordonnées actuelle des lignes du serpent
  */
@@ -167,9 +198,10 @@ void progresser(int lesX[], int lesY[], char direction)
 {
     for (int i = TAILLE_S - 1; i > 0; i--) 
     {
-        lesX[i] = lesX[i - 1]; // transforme les coordonées de chaque corp du serpent en les coordonées du corp suivant
+        lesX[i] = lesX[i - 1]; /** transforme les coordonées de chaque corp du serpent en les coordonées du bout suivant */ 
         lesY[i] = lesY[i - 1];
     }
+<<<<<<< HEAD
     if (direction == DROITE)
     {
         lesX[0] += 1; // augmente de 1 les coordonnées X de la tête
@@ -186,12 +218,15 @@ void progresser(int lesX[], int lesY[], char direction)
     {
         lesY[0] += 1; // augmente de 1 les coordonnées X de la tête
     }
+=======
+    lesX[0]++; /** augmente de 1 les coordonnées X de la tête */ 
+>>>>>>> 278dea8cc933d8a2c05535cfaab151120785255c
 }
 
 
 /**
- * @brief Cette fonction teste s’il y a eu frappe d’un caractère
- * au clavier et retourne 1 si c’est le cas et 0 sinon.
+ * @brief teste s’il y a eu frappe d’un caractère
+ * @return 1 si il y a frappe et 0 sinon.
  */
  int kbhit(){
 	// la fonction retourne :
