@@ -2,7 +2,7 @@
 * @file <Version1.c>
 * @brief <programme le déplacement d’un serpent vers la droite >
 * @author <Gabriel Monnier>
-* @version <1>
+* @version <2>
 * @date <19/10/2024>
 *
 * <description plus complète du programme :
@@ -26,21 +26,21 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MAX 40 // taille du tableau
 #define TAILLE_MIN 1
 
+const int TEMPORISATION = 500000;
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
-const int TEMPORISATION = 500000;
-const char HAUT = 'z'
-const char BAS = 's'
-const char DROITE = 'd'
-const char GAUCHE = 'q'
+const char HAUT = 'z';
+const char BAS = 's';
+const char DROITE = 'd';
+const char GAUCHE = 'q';
 
 /* Déclaration des fonctions */
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-void progresser(int lesX[], int lesY[]);
+void progresser(int lesX[], int lesY[], char direction);
 int  kbhit();
 void disableEcho();
 void enableEcho();
@@ -58,8 +58,10 @@ int main()
     int positionX[TAILLE_S];
     int positionY[TAILLE_S];
     int x, y;
+    char direction;
     // on demande à l'utilisateur la position de depart du serpent
     boucle = true;
+    direction = DROITE;
     do 
     {
         printf("Entrez la position initiale de la tete du serpent (colonne 1-40, ligne 1-40):\n");
@@ -76,6 +78,7 @@ int main()
         positionX[i] = x;
         positionY[i] = y;
     }
+    disableEcho();
     // pour qu'il se deplace à droite a chaque boucle
     while (boucle)
     {
@@ -86,21 +89,44 @@ int main()
             {
                 boucle = false; // sort de la boucle si le caractère 'a' est pressé
             }
+            else if (c == DROITE)
+            {
+                if (direction != GAUCHE )
+                {
+                    direction = DROITE;
+                }
+            }
+            else if (c == GAUCHE)
+            {
+                if (direction != DROITE )
+                {
+                    direction = GAUCHE;
+                }
+            }
             else if (c == HAUT)
             {
-
+                if (direction != BAS )
+                {
+                    direction = HAUT;
+                }
             }
+            else if (c == BAS)
+            {
+                if (direction != HAUT )
+                {
+                    direction = BAS;
+                }
+            }
+        }
         else
         {
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
-            progresser(positionX, positionY, DROITE); // met a jour la position du serpent
+            progresser(positionX, positionY, direction); // met a jour la position du serpent
             dessinerSerpent(positionX, positionY); // dessiner le nouveau serpent a la position mis a jour
             usleep(TEMPORISATION); // attend 500 milliseconde
         }
-
-        }
     }
-
+    enableEcho();
     system("clear");// efface l'écran à la fin
     return EXIT_SUCCESS;
 }
@@ -162,6 +188,7 @@ void dessinerSerpent(int lesX[], int lesY[])
  * la tête du serpent est mise à la droite du corp.
  * @param lesX[] tableau d'entiers : les coordonnées actuelle des colonnes du serpent
  * @param lesY[] tableau d'entiers : les coordonnées actuelle des lignes du serpent
+ * @param direction caractère : la direction vers lequel le snake va
  */
 void progresser(int lesX[], int lesY[], char direction)
 {
