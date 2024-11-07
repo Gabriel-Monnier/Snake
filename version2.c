@@ -26,7 +26,9 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MAX 40 // taille du tableau
 #define TAILLE_MIN 1
 
-const int TEMPORISATION = 500000;
+const int POSX = 20;
+const int POSY = 20;
+const int TEMPORISATION = 250000;
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
@@ -58,17 +60,11 @@ int main()
     int positionY[TAILLE_S];
     int x, y;
     char direction;
-    // on demande à l'utilisateur la position de depart du serpent
+    // initialisation des variables
+    x = POSX;
+    y = POSY;
     boucle = true;
     direction = DROITE;
-    do
-    {
-        printf("Entrez la position initiale de la tete du serpent (colonne 1-40, ligne 1-40):\n");
-        printf("Colonne (x): ");
-        scanf("%d", &x);
-        printf("Ligne (y): ");
-        scanf("%d", &y);
-    } while ((x < TAILLE_MIN) || (x > TAILLE_MAX) || (y < TAILLE_MIN) || (y > TAILLE_MAX)); // on verifie que la position est bonne sinon on redemande
     system("clear");
     // on initialise la position du serpent au coordonnées voulu
     for (int i = 0; i < TAILLE_S; i++)
