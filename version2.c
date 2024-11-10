@@ -143,7 +143,7 @@ void gotoXY(int x, int y)
  */
 void afficher(int x, int y, char c)
 {
-    if (x >= TAILLE_MIN && x <= TAILLE_MAX && y >= TAILLE_MIN && y <= TAILLE_MAX)
+    if (x >= TAILLE_MIN && y >= TAILLE_MIN)
     {
         gotoXY(x, y);
         printf("%c", c); // Si les coordonnées ne sont pas en dehors des limites, afficher le caractère
