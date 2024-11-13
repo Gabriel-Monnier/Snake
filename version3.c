@@ -129,7 +129,7 @@ int main()
         else
         {
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
-            progresser(positionX, positionY, direction, tab);               // met a jour la position du serpent
+            collision = progresser(positionX, positionY, direction, tab);               // met a jour la position du serpent
             
             if ((tab[positionX[0]][positionY[0]] == MUR)) // collision des murs
             {
@@ -207,7 +207,7 @@ void dessinerSerpent(int lesX[], int lesY[])
  * @param lesY[] tableau d'entiers : les coordonnées actuelle des lignes du serpent
  * @param direction caractère : la direction vers lequel le snake va
  */
-void progresser(int lesX[], int lesY[], char direction, plateau tableau)
+void progresser(int lesX[], int lesY[], char direction, bool collision)
 {
     for (int i = TAILLE_S - 1; i > 0; i--)
     {
@@ -229,6 +229,17 @@ void progresser(int lesX[], int lesY[], char direction, plateau tableau)
     else if (direction == BAS)
     {
         lesY[0] += 1; // augmente de 1 les coordonnées X de la tête
+    }
+    if ((tab[positionX[0]][positionY[0]] == MUR)) // collision des murs
+    {
+        collision = true;
+    }
+    for(int i = 1; i < TAILLE_S - 1; i++) // collision avec le corp
+    {
+        if ((lesX[0] == lesX[i]) && (lesY[0] == lesY[i]))
+        {
+            collision = true;
+        }
     }
 }
 
