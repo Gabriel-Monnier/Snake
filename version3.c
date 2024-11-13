@@ -22,10 +22,14 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #include <stdbool.h>
 
 // déclaration des constante
+
 #define TAILLE_S 10   // taille du serpent
 #define TAILLE_MAX_X 80 // taille X du tableau 
 #define TAILLE_MAX_Y 40 // taille Y du tableau 
 #define TAILLE_MIN 1
+#define TAILLE_PAVE 5         // taille du pavé
+#define NUM_PAVES 4           // nombre de pavés
+
 
 const int POSX = 40;
 const int POSY = 20;
@@ -37,16 +41,22 @@ const char HAUT = 'z';
 const char BAS = 's';
 const char DROITE = 'd';
 const char GAUCHE = 'q';
+const char MUR = '#';
+const char AIR = ' ';
+
+typedef char plateau[TAILLE_MAX_X][TAILLE_MAX_Y];
 
 /* Déclaration des fonctions */
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-void progresser(int lesX[], int lesY[], char direction);
+void progresser(int lesX[], int lesY[], char direction, plateau tableau);
 int kbhit();
 void disableEcho();
 void enableEcho();
+void initPlateau(plateau);
+void dessinerPlateau(plateau);
 
 /**
  * @brief Entrée du programme
@@ -56,6 +66,7 @@ void enableEcho();
 int main()
 {
     // on declare les variables
+    plateau tab;
     bool boucle;
     int positionX[TAILLE_S];
     int positionY[TAILLE_S];
@@ -73,6 +84,8 @@ int main()
         positionX[i] = x;
         positionY[i] = y;
     }
+    initPlateau(tab);
+    dessinerPlateau(tab);
     disableEcho();
     // pour qu'il se deplace à droite a chaque boucle
     while (boucle)
@@ -116,13 +129,13 @@ int main()
         else
         {
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
-            progresser(positionX, positionY, direction);               // met a jour la position du serpent
-            /*
-            if ((tableau[positionX[0]][positionY[0]] == '*') || (tableau[positionX[0]][positionY[0]] == 'X'))
+            progresser(positionX, positionY, direction, tab);               // met a jour la position du serpent
+            
+            if ((tab[positionX[0]][positionY[0]] == MUR)) // collision des murs
             {
-
+                boucle = false;
             }
-            */
+            
             dessinerSerpent(positionX, positionY);                     // dessiner le nouveau serpent a la position mis a jour
             usleep(TEMPORISATION);                                     // attend 500 milliseconde
         }
@@ -192,7 +205,7 @@ void dessinerSerpent(int lesX[], int lesY[])
  * @param lesY[] tableau d'entiers : les coordonnées actuelle des lignes du serpent
  * @param direction caractère : la direction vers lequel le snake va
  */
-void progresser(int lesX[], int lesY[], char direction)
+void progresser(int lesX[], int lesY[], char direction, plateau tableau)
 {
     for (int i = TAILLE_S - 1; i > 0; i--)
     {
@@ -216,6 +229,37 @@ void progresser(int lesX[], int lesY[], char direction)
         lesY[0] += 1; // augmente de 1 les coordonnées X de la tête
     }
 }
+
+
+void initPlateau(plateau tableau)
+{
+    for (int x = 0; x < TAILLE_MAX_X; x++)
+    {
+        for (int y = 0; y < TAILLE_MAX_Y; y++)
+        {
+            if ((x == 1) || (y == 1) || (x == TAILLE_MAX_X - 1) || (y == TAILLE_MAX_Y - 1))
+            {
+                tableau[x][y] = MUR;
+            }
+            else
+            {
+                tableau[x][y] = AIR;
+            }
+        }
+    }
+}
+
+void dessinerPlateau(plateau tableau)
+{
+    for (int x = 0; x < TAILLE_MAX_X; x++)
+    {
+        for (int y = 0; y < TAILLE_MAX_Y; y++)
+        {
+            afficher(x,y,tableau[x][y]);
+        }
+    }
+}
+
 
 /**
  * @brief Cette fonction teste s’il y a eu frappe d’un caractère
