@@ -135,9 +135,11 @@ int main()
             {
                 boucle = false;
             }
-            
-            dessinerSerpent(positionX, positionY);                     // dessiner le nouveau serpent a la position mis a jour
-            usleep(TEMPORISATION);                                     // attend 500 milliseconde
+            else
+            {
+                dessinerSerpent(positionX, positionY);                     // dessiner le nouveau serpent a la position mis a jour
+                usleep(TEMPORISATION);                                     // attend 500 milliseconde
+            }
         }
     }
     enableEcho();
