@@ -20,6 +20,7 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #include <fcntl.h>
 #include <termios.h>
 #include <stdbool.h>
+#include <time.h>
 
 // déclaration des constante
 
@@ -27,8 +28,8 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MAX_X 80 // taille X du tableau 
 #define TAILLE_MAX_Y 40 // taille Y du tableau 
 #define TAILLE_MIN 1
-#define TAILLE_PAVE 5         // taille du pavé
-#define NUM_PAVES 4           // nombre de pavés
+#define TAILLE_PAVE 5 // taille du pavé
+#define NUM_PAVES 4 // nombre de pavés
 
 
 const int POSX = 40;
@@ -44,14 +45,14 @@ const char GAUCHE = 'q';
 const char MUR = '#';
 const char AIR = ' ';
 
-typedef char plateau[TAILLE_MAX_X][TAILLE_MAX_Y];
+typedef char plateau[TAILLE_MAX_X + 1][TAILLE_MAX_Y + 1]; // + 1 pour pas prendre en compte la ligne et colonne 0
 
 /* Déclaration des fonctions */
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-void progresser(int lesX[], int lesY[], char direction, plateau tableau);
+void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision);
 int kbhit();
 void disableEcho();
 void enableEcho();
@@ -68,6 +69,7 @@ int main()
     // on declare les variables
     plateau tab;
     bool boucle;
+    bool collision;
     int positionX[TAILLE_S];
     int positionY[TAILLE_S];
     int x, y;
@@ -76,6 +78,7 @@ int main()
     x = POSX;
     y = POSY;
     boucle = true;
+    collision = false;
     direction = DROITE;
     system("clear");
     // on initialise la position du serpent au coordonnées voulu
@@ -129,20 +132,21 @@ int main()
         else
         {
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
-            collision = progresser(positionX, positionY, direction, tab);               // met a jour la position du serpent
+            progresser(positionX, positionY, direction, tab, &collision);               // met a jour la position du serpent
             
-            if ((tab[positionX[0]][positionY[0]] == MUR)) // collision des murs
+            if (collision == true) // collision
             {
                 boucle = false;
             }
             else
             {
-                dessinerSerpent(positionX, positionY);                     // dessiner le nouveau serpent a la position mis a jour
-                usleep(TEMPORISATION);                                     // attend 500 milliseconde
+                dessinerSerpent(positionX, positionY); // dessiner le nouveau serpent a la position mis a jour
             }
+            usleep(TEMPORISATION);
         }
     }
     enableEcho();
+    printf("\n");
     system("clear"); // efface l'écran à la fin
     return EXIT_SUCCESS;
 }
@@ -200,18 +204,18 @@ void dessinerSerpent(int lesX[], int lesY[])
 }
 
 /**
- * @brief Procédure pour mettre à jour la position du serpent
- * on déplace chaque bout du serpent vers la position de devant
- * la tête du serpent est mise à la droite du corp.
- * @param lesX[] tableau d'entiers : les coordonnées actuelle des colonnes du serpent
- * @param lesY[] tableau d'entiers : les coordonnées actuelle des lignes du serpent
- * @param direction caractère : la direction vers lequel le snake va
+ * @brief Mettre à jour la position du serpent
+ * @param lesX tableau des positions en X, les colonnes
+ * @param lesY tableau des positions en Y, les lignes
+ * @param direction direction du serpent
+ * @param tableau plateau de jeu avec les murs
+ * @param adr_collision adresse de la variable collision
  */
-void progresser(int lesX[], int lesY[], char direction, bool collision)
+void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision)
 {
     for (int i = TAILLE_S - 1; i > 0; i--)
     {
-        lesX[i] = lesX[i - 1]; // transforme les coordonées de chaque corp du serpent en les coordonées du corp suivant
+        lesX[i] = lesX[i - 1]; // transforme les coordonées de chaque corp du serpent en les coordonées du corp suivant sauf la tête
         lesY[i] = lesY[i - 1];
     }
     if (direction == DROITE)
@@ -220,25 +224,25 @@ void progresser(int lesX[], int lesY[], char direction, bool collision)
     }
     else if (direction == GAUCHE)
     {
-        lesX[0] -= 1; // augmente de 1 les coordonnées X de la tête
+        lesX[0] -= 1; // diminue de 1 les coordonnées X de la tête
     }
     else if (direction == HAUT)
     {
-        lesY[0] -= 1; // augmente de 1 les coordonnées X de la tête
+        lesY[0] -= 1; // diminue de 1 les coordonnées Y de la tête
     }
     else if (direction == BAS)
     {
-        lesY[0] += 1; // augmente de 1 les coordonnées X de la tête
+        lesY[0] += 1; // augmente de 1 les coordonnées Y de la tête
     }
-    if ((tab[positionX[0]][positionY[0]] == MUR)) // collision des murs
+    if ((tableau[lesX[0]][lesY[0]] == MUR)) // collision des murs
     {
-        collision = true;
+        *adr_collision = true;
     }
-    for(int i = 1; i < TAILLE_S - 1; i++) // collision avec le corp
+    for(int i = 1; i < TAILLE_S; i++) // collision avec le corp
     {
         if ((lesX[0] == lesX[i]) && (lesY[0] == lesY[i]))
         {
-            collision = true;
+            *adr_collision = true;
         }
     }
 }
@@ -246,11 +250,11 @@ void progresser(int lesX[], int lesY[], char direction, bool collision)
 
 void initPlateau(plateau tableau)
 {
-    for (int x = 0; x < TAILLE_MAX_X; x++)
+    for (int x = 1; x <= TAILLE_MAX_X; x++)
     {
-        for (int y = 0; y < TAILLE_MAX_Y; y++)
+        for (int y = 1; y <= TAILLE_MAX_Y; y++)
         {
-            if ((x == 1) || (y == 1) || (x == TAILLE_MAX_X - 1) || (y == TAILLE_MAX_Y - 1))
+            if ((x == 1) || (y == 1) || (x == TAILLE_MAX_X) || (y == TAILLE_MAX_Y))
             {
                 tableau[x][y] = MUR;
             }
@@ -260,13 +264,32 @@ void initPlateau(plateau tableau)
             }
         }
     }
+    // Initialiser les pavés à des positions aléatoires
+    srand(time(NULL));
+    for (int p = 0; p < NUM_PAVES; p++) {
+        int startX, startY;
+        // Trouve une position aléatoire, qui ne touche pas la bordure et qui n'apparait pas la ou apparait le serpent
+        do {
+            startX = rand() % (TAILLE_MAX_X - TAILLE_PAVE - 2) + 2;
+            startY = rand() % (TAILLE_MAX_Y - TAILLE_PAVE - 2) + 2;
+        } while (startX <= 2 || startY <= 2 ||  // pour qu'ils touchent pas la bordure
+        ((startX >= POSX + 1 - TAILLE_PAVE && startX < POSX + 1 + TAILLE_S)  // pour qu'ils apparaissent pas sur le serpent  
+        && (startY  >= POSY + 1 - TAILLE_PAVE && startY < POSY + 1)));
+
+        // Place le pavé
+        for (int i = 0; i < TAILLE_PAVE; i++) {
+            for (int j = 0; j < TAILLE_PAVE; j++) {
+                tableau[startX + i][startY + j] = MUR;
+            }
+        }
+    }
 }
 
 void dessinerPlateau(plateau tableau)
 {
-    for (int x = 0; x < TAILLE_MAX_X; x++)
+    for (int x = 0; x <= TAILLE_MAX_X; x++)
     {
-        for (int y = 0; y < TAILLE_MAX_Y; y++)
+        for (int y = 0; y <= TAILLE_MAX_Y; y++)
         {
             afficher(x,y,tableau[x][y]);
         }
