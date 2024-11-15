@@ -29,12 +29,12 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MAX_Y 40 // taille Y du tableau 
 #define TAILLE_MIN 1
 #define TAILLE_PAVE 5 // taille du pavé
-#define NUM_PAVES 4 // nombre de pavés
+#define NUM_PAVES 10000 // nombre de pavés
 
-
+const int SURETE = 3;
 const int POSX = 40;
 const int POSY = 20;
-const int TEMPORISATION = 250000;
+const int TEMPORISATION = 1000000;
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
@@ -84,7 +84,7 @@ int main()
     // on initialise la position du serpent au coordonnées voulu
     for (int i = 0; i < TAILLE_S; i++)
     {
-        positionX[i] = x;
+        positionX[i] = x - i;
         positionY[i] = y;
     }
     initPlateau(tab);
@@ -146,7 +146,6 @@ int main()
         }
     }
     enableEcho();
-    printf("\n");
     system("clear"); // efface l'écran à la fin
     return EXIT_SUCCESS;
 }
@@ -273,7 +272,7 @@ void initPlateau(plateau tableau)
             startX = rand() % (TAILLE_MAX_X - TAILLE_PAVE - 2) + 2;
             startY = rand() % (TAILLE_MAX_Y - TAILLE_PAVE - 2) + 2;
         } while (startX <= 2 || startY <= 2 ||  // pour qu'ils touchent pas la bordure
-        ((startX >= POSX + 1 - TAILLE_PAVE && startX < POSX + 1 + TAILLE_S)  // pour qu'ils apparaissent pas sur le serpent  
+        ((startX >= POSX + 2 - TAILLE_PAVE - TAILLE_S && startX < POSX + 1 + SURETE)  // pour qu'ils apparaissent pas sur le serpent  
         && (startY  >= POSY + 1 - TAILLE_PAVE && startY < POSY + 1)));
 
         // Place le pavé
