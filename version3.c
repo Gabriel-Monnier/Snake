@@ -29,12 +29,12 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MAX_Y 40 // taille Y du tableau 
 #define TAILLE_MIN 1
 #define TAILLE_PAVE 5 // taille du pavé
-#define NUM_PAVES 10000 // nombre de pavés
+#define NUM_PAVES 4 // nombre de pavés
 
 const int SURETE = 3;
 const int POSX = 40;
 const int POSY = 20;
-const int TEMPORISATION = 1000000;
+const int TEMPORISATION = 250000;
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
@@ -84,7 +84,7 @@ int main()
     // on initialise la position du serpent au coordonnées voulu
     for (int i = 0; i < TAILLE_S; i++)
     {
-        positionX[i] = x - i;
+        positionX[i] = x - i - 1; // pour apparition au coordoné voulu
         positionY[i] = y;
     }
     initPlateau(tab);
