@@ -44,6 +44,7 @@ const char DROITE = 'd';
 const char GAUCHE = 'q';
 const char MUR = '#';
 const char AIR = ' ';
+const char POMME = '6';
 
 typedef char plateau[TAILLE_MAX_X + 1][TAILLE_MAX_Y + 1]; // + 1 pour pas prendre en compte la ligne et colonne 0
 
@@ -52,12 +53,13 @@ void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
 void effacer(int x, int y);
 void dessinerSerpent(int lesX[], int lesY[]);
-void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision);
+void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision, bool *adr_pomme);
 int kbhit();
 void disableEcho();
 void enableEcho();
 void initPlateau(plateau);
 void dessinerPlateau(plateau);
+void ajouterPomme(plateau);
 
 /**
  * @brief Entrée du programme
@@ -70,6 +72,7 @@ int main()
     plateau tab;
     bool boucle;
     bool collision;
+    bool pomme;
     int positionX[TAILLE_S];
     int positionY[TAILLE_S];
     int x, y;
@@ -79,6 +82,7 @@ int main()
     y = POSY;
     boucle = true;
     collision = false;
+    pomme = false;
     direction = DROITE;
     system("clear");
     // on initialise la position du serpent au coordonnées voulu
@@ -88,7 +92,8 @@ int main()
         positionY[i] = y;
     }
     initPlateau(tab);
-    dessinerPlateau(tab);
+    ajouterPomme(tab);
+    dessinerSerpent(positionX, positionY);
     disableEcho();
     // pour qu'il se deplace à droite a chaque boucle
     while (boucle)
@@ -132,11 +137,16 @@ int main()
         else
         {
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
-            progresser(positionX, positionY, direction, tab, &collision);               // met a jour la position du serpent
+            progresser(positionX, positionY, direction, tab, &collision, &pomme);               // met a jour la position du serpent
             
             if (collision == true) // collision
             {
                 boucle = false;
+            }
+            else if (pomme == true) // si mange une pomme
+            {
+                ajouterPomme(tab);
+                pomme = false;
             }
             else
             {
@@ -210,7 +220,7 @@ void dessinerSerpent(int lesX[], int lesY[])
  * @param tableau plateau de jeu avec les murs
  * @param adr_collision adresse de la variable collision
  */
-void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision)
+void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *adr_collision, bool *adr_pomme)
 {
     for (int i = TAILLE_S - 1; i > 0; i--)
     {
@@ -237,6 +247,10 @@ void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *a
     {
         *adr_collision = true;
     }
+    else if((tableau[lesX[0]][lesY[0]] == POMME))
+    {
+        *adr_pomme = true;
+    }
     for(int i = 1; i < TAILLE_S; i++) // collision avec le corp
     {
         if ((lesX[0] == lesX[i]) && (lesY[0] == lesY[i]))
@@ -253,7 +267,7 @@ void initPlateau(plateau tableau)
     {
         for (int y = 1; y <= TAILLE_MAX_Y; y++)
         {
-            if ((x == 1) || (y == 1) || (x == TAILLE_MAX_X) || (y == TAILLE_MAX_Y))
+            if (((x == 1) || (y == 1) || (x == TAILLE_MAX_X) || (y == TAILLE_MAX_Y)) && (x != TAILLE_MAX_X / 2) && (y != TAILLE_MAX_Y / 2) )
             {
                 tableau[x][y] = MUR;
             }
@@ -278,7 +292,7 @@ void initPlateau(plateau tableau)
         // Place le pavé
         for (int i = 0; i < TAILLE_PAVE; i++) {
             for (int j = 0; j < TAILLE_PAVE; j++) {
-                tableau[startX + i][startY + j] = MUR;
+                tableau[startX + i][startY + j] == MUR;
             }
         }
     }
@@ -295,6 +309,18 @@ void dessinerPlateau(plateau tableau)
     }
 }
 
+void ajouterPomme(plateau tableau)
+{
+    srand(time(NULL));
+    int startX, startY;
+    do {
+            startX = rand() % (TAILLE_MAX_X);
+            startY = rand() % (TAILLE_MAX_Y);
+    } while ((tableau[startX][startY] == MUR) || //pour pas faire apparaitre dans un mur
+    (startY == POSY && startX <= POSX && startX > POSX - TAILLE_S)); // pour pas faire apparaitre sur le serpent
+    tableau[startX][startY] = POMME;
+    dessinerPlateau(tableau);
+}
 
 /**
  * @brief Cette fonction teste s’il y a eu frappe d’un caractère
