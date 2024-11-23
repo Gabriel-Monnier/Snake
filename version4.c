@@ -2,7 +2,7 @@
 * @file <Version1.c>
 * @brief <programme le déplacement d’un serpent vers la droite >
 * @author <Gabriel Monnier>
-* @version <3>
+* @version <4>
 * @date <19/10/2024>
 *
 * <description plus complète du programme :
@@ -24,17 +24,19 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 
 // déclaration des constante
 
-#define TAILLE_S 10   // taille du serpent
+#define TAILLE_S_MAX 10 + POMMEMANGE   // taille du serpent
 #define TAILLE_MAX_X 80 // taille X du tableau 
 #define TAILLE_MAX_Y 40 // taille Y du tableau 
 #define TAILLE_MIN 1
 #define TAILLE_PAVE 5 // taille du pavé
 #define NUM_PAVES 4 // nombre de pavés
 
-const int SURETE = 3;
-const int POSX = 40;
-const int POSY = 20;
-const int TEMPORISATION = 250000;
+const int POMMEMANGE = 10; // nombre de pomme mange pour gagner
+const int SURETE = 3; // nombre de case devant le serpent ou il ne peut pas avoir de pavé
+const int POSX = 40; // position de début du serpent en X
+const int POSY = 20; // position de début du serpent en Y
+const int TEMPDIFF = 10000; // le temp retirer chaque fois que le serpent mange une pomme
+const int TEMPORISATION = 250000; // temps de base entre chaque avancement du serpent
 const char TETE = 'O';
 const char CORP = 'X';
 const char ARRET = 'a';
@@ -48,6 +50,7 @@ const char POMME = '6';
 
 typedef char plateau[TAILLE_MAX_X + 1][TAILLE_MAX_Y + 1]; // + 1 pour pas prendre en compte la ligne et colonne 0
 
+int TAILLE_S = 10;
 /* Déclaration des fonctions */
 void gotoXY(int x, int y);
 void afficher(int x, int y, char c);
@@ -73,11 +76,13 @@ int main()
     bool boucle;
     bool collision;
     bool pomme;
-    int positionX[TAILLE_S];
-    int positionY[TAILLE_S];
+    int vartemporisation;
+    int positionX[TAILLE_S_MAX];
+    int positionY[TAILLE_S_MAX];
     int x, y;
     char direction;
     // initialisation des variables
+    vartemporisation = TEMPORISATION;
     x = POSX;
     y = POSY;
     boucle = true;
@@ -93,6 +98,7 @@ int main()
     }
     initPlateau(tab);
     ajouterPomme(tab);
+    usleep(vartemporisation);
     dessinerSerpent(positionX, positionY);
     disableEcho();
     // pour qu'il se deplace à droite a chaque boucle
@@ -103,7 +109,7 @@ int main()
             char c = getchar();
             if (c == ARRET)
             {
-                boucle = false; // sort de la boucle si le caractère 'a' est pressé
+                boucle = false; // sort de la boucle si le caractère d'arrêt ici 'a' est pressé
             }
             else if (c == DROITE)
             {
@@ -133,6 +139,30 @@ int main()
                     direction = BAS;
                 }
             }
+            effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
+            progresser(positionX, positionY, direction, tab, &collision, &pomme);               // met a jour la position du serpent
+            
+            if (collision == true) // collision
+            {
+                boucle = false;
+            }
+            else if (pomme == true) // si mange une pomme
+            {
+                TAILLE_S++;
+                if (TAILLE_S == TAILLE_S_MAX)
+                {
+                    boucle = false;
+                }
+                ajouterPomme(tab);
+                dessinerSerpent(positionX, positionY);
+                pomme = false;
+                vartemporisation -= 10000;
+            }
+            else
+            {
+                dessinerSerpent(positionX, positionY); // dessiner le nouveau serpent a la position mis a jour
+            }
+            usleep(vartemporisation);
         }
         else
         {
@@ -145,25 +175,32 @@ int main()
             }
             else if (pomme == true) // si mange une pomme
             {
+                TAILLE_S++;
+                if (TAILLE_S == TAILLE_S_MAX)
+                {
+                    boucle = false;
+                }
                 ajouterPomme(tab);
+                dessinerSerpent(positionX, positionY);
                 pomme = false;
+                vartemporisation -= TEMPDIFF;
             }
             else
             {
                 dessinerSerpent(positionX, positionY); // dessiner le nouveau serpent a la position mis a jour
             }
-            usleep(TEMPORISATION);
+            usleep(vartemporisation);
         }
     }
     enableEcho();
-    system("clear"); // efface l'écran à la fin
+    //system("clear"); // efface l'écran à la fin
     return EXIT_SUCCESS;
 }
 
 /**
  * @brief Procédure pour positionner le curseur aux coordonnées x y
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
  */
 void gotoXY(int x, int y)
 {
@@ -172,9 +209,9 @@ void gotoXY(int x, int y)
 
 /**
  * @brief Procédure pour afficher le caractère c à la position (x, y)
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
- * @param ens de type caractère : le caractère qu'on veut affiche a (x, y)
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
+ * @param c de type caractère : le caractère qu'on veut affiche a (x, y)
  */
 void afficher(int x, int y, char c)
 {
@@ -187,8 +224,8 @@ void afficher(int x, int y, char c)
 
 /**
  * @brief Procédure pour afficher un espace à la position (x, y)
- * @param ens de type entier : la colonne sur laquelle on veut le curseur
- * @param ens de type entier : la ligne sur laquelle on veut le curseur
+ * @param x de type entier : la colonne sur laquelle on veut le curseur
+ * @param y de type entier : la ligne sur laquelle on veut le curseur
  */
 void effacer(int x, int y)
 {
@@ -200,8 +237,8 @@ void effacer(int x, int y)
  * @brief Procédure pour afficher le serpent en utilisant les tableaux donnés
  * en premier la tête à la première position suivie du corp suivie du corps
  * qui est dessiné à partir de la  deuxième position jusqu'à la fin du tableau.
- * @param ens lesX[] tableau d'entiers : les coordonnées de la colonne du serpent.
- * @param ens lesY[] tableau d'entiers : les coordonnées de la ligne du serpent.
+ * @param lesX lesX[] tableau d'entiers : les coordonnées de la colonne du serpent.
+ * @param lesY lesY[] tableau d'entiers : les coordonnées de la ligne du serpent.
  */
 void dessinerSerpent(int lesX[], int lesY[])
 {
@@ -247,9 +284,27 @@ void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *a
     {
         *adr_collision = true;
     }
-    else if((tableau[lesX[0]][lesY[0]] == POMME))
+    // passage entre les murs
+    else if ((lesX[0] == TAILLE_MAX_X / 2) && (lesY[0] == 0))
+    {
+        lesY[0] = TAILLE_MAX_Y;
+    }
+    else if ((lesX[0] == TAILLE_MAX_X / 2) && (lesY[0] == TAILLE_MAX_Y + 1))
+    {
+        lesY[0] = TAILLE_MIN;
+    }
+    else if ((lesY[0] == TAILLE_MAX_Y / 2) && (lesX[0] == 0))
+    {
+        lesX[0] = TAILLE_MAX_X;
+    }
+    else if ((lesY[0] == TAILLE_MAX_Y / 2) && (lesX[0] == TAILLE_MAX_X + 1))
+    {
+        lesX[0] = TAILLE_MIN;
+    }
+    else if((tableau[lesX[0]][lesY[0]] == POMME)) // mange une pomme
     {
         *adr_pomme = true;
+        tableau[lesX[0]][lesY[0]] = AIR;
     }
     for(int i = 1; i < TAILLE_S; i++) // collision avec le corp
     {
@@ -260,7 +315,10 @@ void progresser(int lesX[], int lesY[], char direction, plateau tableau, bool *a
     }
 }
 
-
+/**
+ * @brief initialise un plateau avec bordure et des pavé placé aléatoirement
+ * @param tableau de type plateau : tableau a double entrée pour créé le Plateau
+ */
 void initPlateau(plateau tableau)
 {
     for (int x = 1; x <= TAILLE_MAX_X; x++)
@@ -286,18 +344,23 @@ void initPlateau(plateau tableau)
             startX = rand() % (TAILLE_MAX_X - TAILLE_PAVE - 2) + 2;
             startY = rand() % (TAILLE_MAX_Y - TAILLE_PAVE - 2) + 2;
         } while (startX <= 2 || startY <= 2 ||  // pour qu'ils touchent pas la bordure
-        ((startX >= POSX + 2 - TAILLE_PAVE - TAILLE_S && startX < POSX + 1 + SURETE)  // pour qu'ils apparaissent pas sur le serpent  
+        ((startX >= POSX - TAILLE_PAVE - TAILLE_S && startX < POSX + 1 + SURETE)  // pour qu'ils apparaissent pas sur le serpent  
         && (startY  >= POSY + 1 - TAILLE_PAVE && startY < POSY + 1)));
 
         // Place le pavé
         for (int i = 0; i < TAILLE_PAVE; i++) {
-            for (int j = 0; j < TAILLE_PAVE; j++) {
-                tableau[startX + i][startY + j] == MUR;
+            for (int j = 0; j < TAILLE_PAVE; j++) 
+            {
+                tableau[startX + i][startY + j] = MUR;
             }
         }
     }
 }
 
+/**
+ * @brief dessine le plateau donné
+ * @param tableau de type plateau : tableau a double entrée
+ */
 void dessinerPlateau(plateau tableau)
 {
     for (int x = 0; x <= TAILLE_MAX_X; x++)
@@ -309,15 +372,21 @@ void dessinerPlateau(plateau tableau)
     }
 }
 
+/**
+ * @brief ajoute une pomme et dessine le plateau dans le tableau donné
+ * @param tableau de type plateau : tableau a double entrée
+ */
 void ajouterPomme(plateau tableau)
 {
     srand(time(NULL));
     int startX, startY;
     do {
-            startX = rand() % (TAILLE_MAX_X);
-            startY = rand() % (TAILLE_MAX_Y);
-    } while ((tableau[startX][startY] == MUR) || //pour pas faire apparaitre dans un mur
-    (startY == POSY && startX <= POSX && startX > POSX - TAILLE_S)); // pour pas faire apparaitre sur le serpent
+            startX = rand() % (TAILLE_MAX_X - 1) + 1;
+            startY = rand() % (TAILLE_MAX_Y - 1) + 1;
+    } while ((tableau[startX][startY] == MUR) || // ne pas placer sur un mur
+             (tableau[startX][startY] == POMME) || // ne pas placer sur une autre pomme
+             // ne pas placer sur le serpent
+             (startY == POSY && startX <= POSX && startX > POSX - TAILLE_S)); 
     tableau[startX][startY] = POMME;
     dessinerPlateau(tableau);
 }
