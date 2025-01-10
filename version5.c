@@ -30,14 +30,14 @@ colonne x, puis un numéro de ligne y. L’écran devra ensuite s’effacer et a
 #define TAILLE_MIN 1
 #define TAILLE_PAVE 4 // taille du pavé
 #define LARGEUR_PAVE 6
-#define NUM_PAVES 4 // nombre de pavés
+#define NUM_PAVES 1 // nombre de pavés
 
-const int POMMEMANGE = 10; // nombre de pomme mange pour gagner
+const int POMMEMANGE = 3; // nombre de pomme mange pour gagner
 const int SURETE = 3; // nombre de case devant le serpent ou il ne peut pas avoir de pavé
 const int POSX = 40; // position de début du serpent en X
 const int POSY = 20; // position de début du serpent en Y
 const float TEMPDIFF = 0.9; // le temp retirer chaque fois que le serpent mange une pomme
-const int TEMPORISATION = 250000; // temps de base entre chaque avancement du serpent
+const int TEMPORISATION = 800000; // temps de base entre chaque avancement du serpent
 const char TETE_GAUCHE = '<';
 const char TETE_DROITE = '>';
 const char TETE_HAUT = '^';
@@ -52,7 +52,6 @@ const char MUR = '#';
 const char PAVE = 'P';
 const char AIR = ' ';
 const char POMME = '6';
-const int NBPOMME = 3;
 
 typedef char plateau[TAILLE_MAX_X + 1][TAILLE_MAX_Y + 1]; // + 1 pour pas prendre en compte la ligne et colonne 0
 
@@ -87,7 +86,13 @@ int main()
     int positionY[TAILLE_S_MAX];
     int x, y;
     char direction;
+    int nbpomme;
+    int varNbPave;
+    int varPomme;
     // initialisation des variables
+    varPomme = POMMEMANGE;
+    varNbPave = NUM_PAVES;
+    nbpomme = 0;
     vartemporisation = TEMPORISATION;
     x = POSX;
     y = POSY;
@@ -147,22 +152,24 @@ int main()
             }
             effacer(positionX[TAILLE_S - 1], positionY[TAILLE_S - 1]); // efface le bout du serpent qui ne seras pas remplacer par le prochain serpent
             progresser(positionX, positionY, direction, tab, &collision, &pomme);               // met a jour la position du serpent
-            
             if (collision == true) // collision
             {
                 boucle = false;
             }
             else if (pomme == true) // si mange une pomme
             {
-                TAILLE_S++;
-                if (TAILLE_S == TAILLE_S_MAX)
+                //TAILLE_S++;
+                nbpomme++;
+                if (nbpomme == POMMEMANGE)
                 {
-                    boucle = false;
+                    vartemporisation = vartemporisation / 2;
+                    varNbPave *= 2;
+                    varPomme *= 2;
+                    nbpomme = 0;
                 }
                 ajouterPomme(tab);
                 dessinerSerpent(positionX, positionY, direction);
                 pomme = false;
-                vartemporisation -= 10000;
             }
             else
             {
@@ -181,15 +188,18 @@ int main()
             }
             else if (pomme == true) // si mange une pomme
             {
-                TAILLE_S++;
-                if (TAILLE_S == TAILLE_S_MAX)
+                //TAILLE_S++;
+                nbpomme++;
+                if (nbpomme == POMMEMANGE)
                 {
-                    boucle = false;
+                    vartemporisation = vartemporisation / 2;
+                    varNbPave *= 2;
+                    varPomme *= 2;
+                    nbpomme = 0;
                 }
                 ajouterPomme(tab);
                 dessinerSerpent(positionX, positionY, direction);
                 pomme = false;
-                vartemporisation *= TEMPDIFF;
             }
             else
             {
