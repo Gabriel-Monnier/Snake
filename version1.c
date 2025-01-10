@@ -3,7 +3,7 @@
 * @brief <programme le déplacement d’un serpent vers la droite >
 * @author <Gabriel Monnier>
 * @version <1>
-* @date <19/10/2024>
+* @date <19/10/2024>aa
 *
 * <description plus complète du programme :
 programme le déplacement d’un serpent de taille TAILLE_S :
